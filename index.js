@@ -4,6 +4,7 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 import expressOasGenerator from "@mickeymond/express-oas-generator";
 import cors from "cors";
+import errorHandler from "errorhandler";
 import userRouter from "./routes/user.js";
 import articleRouter from "./routes/article.js";
 
@@ -12,7 +13,6 @@ await mongoose.connect(process.env.MONGO_URI);
 
 // Create an app
 const app = express();
-// app.set("trust proxy", 1);
 expressOasGenerator.handleResponses(app, {
     alwaysServeDocs: true,
     tags: ['users', 'articles'],
@@ -22,15 +22,13 @@ expressOasGenerator.handleResponses(app, {
 // Use middlewares
 app.use(cors({
     credentials: true,
-    origin: 'http://localhost:5173'
+    origin: process.env.ALLOWED_DOMAINS?.split(',') || []
 }));
 app.use(express.json());
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { httpOnly: true, secure: false, sameSite: "lax" },
-    // proxy: true,
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URI
     })
@@ -41,6 +39,7 @@ app.use(userRouter);
 app.use(articleRouter);
 expressOasGenerator.handleRequests();
 app.use((req, res) => res.redirect('/api-docs/'));
+app.use(errorHandler({ log: false }));
 
 // Listen for incoming request
 const port = process.env.PORT || 3000;

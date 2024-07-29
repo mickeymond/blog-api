@@ -34,3 +34,34 @@ export const getArticles = async (req, res, next) => {
         next(error);
     }
 }
+
+export const updateArticle = async (req, res, next) => {
+    try {
+        // Validate request
+        const { value, error } = addArticleValidator.validate(req.body);
+        if (error) {
+            return res.status(422).json(error);
+        }
+        // Update article
+        const article = await ArticleModel.findByIdAndUpdate(
+            req.params.id,
+            value,
+            { new: true }
+        );
+        // Return response
+        res.status(200).json(article);
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const deleteArticle = async (req, res, next) => {
+    try {
+        // Delete article
+        await ArticleModel.findByIdAndDelete(req.params.id);
+        // Return response
+        res.status(200).json('Article Deleted!');
+    } catch (error) {
+        next(error);
+    }
+}
