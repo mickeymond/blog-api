@@ -1,5 +1,6 @@
 import { model, Schema, Types } from "mongoose";
 import { toJSON } from "@reis/mongoose-to-json";
+import mongooseErrors from "mongoose-errors";
 
 const articleSchema = new Schema({
     title: { type: String, required: true },
@@ -10,6 +11,8 @@ const articleSchema = new Schema({
     timestamps: true
 });
 
-articleSchema.plugin(toJSON);
+articleSchema
+    .plugin(mongooseErrors)
+    .plugin(toJSON);
 
 export const ArticleModel = model('Article', articleSchema);
